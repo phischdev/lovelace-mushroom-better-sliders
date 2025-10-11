@@ -221,7 +221,7 @@ export class SliderItem extends LitElement {
     @query("#slider")
     private slider;
 
-    private speedFactor = 0.4;
+    private speedFactor = 0.8;
     private previewThrottle = 130; // ms
 
     setupListeners() {
