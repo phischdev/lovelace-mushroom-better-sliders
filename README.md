@@ -38,14 +38,14 @@ Mushroom is available in [HACS][hacs] (Home Assistant Community Store).
 1. Download repository and build `mushroom.js`. Instructions are in the [original repo][original-repo].
 2. Put `mushroom.js` file into your `config/www` folder.
 3. Add reference to `mushroom.js` in Dashboard. There's two way to do that:
-    - **Using UI:** _Settings_ → _Dashboards_ → _More Options icon_ → _Resources_ → _Add Resource_ → Set _Url_ as `/local/mushroom.js` → Set _Resource type_ as `JavaScript Module`.
-      **Note:** If you do not see the Resources menu, you will need to enable _Advanced Mode_ in your _User Profile_
-    - **Using YAML:** Add following code to `lovelace` section.
-        ```yaml
-        resources:
-            - url: /local/mushroom.js
-              type: module
-        ```
+   - **Using UI:** _Settings_ → _Dashboards_ → _More Options icon_ → _Resources_ → _Add Resource_ → Set _Url_ as `/local/mushroom.js` → Set _Resource type_ as `JavaScript Module`.
+     **Note:** If you do not see the Resources menu, you will need to enable _Advanced Mode_ in your _User Profile_
+   - **Using YAML:** Add following code to `lovelace` section.
+     ```yaml
+     resources:
+       - url: /local/mushroom.js
+         type: module
+     ```
 
 ## Usage
 
@@ -60,23 +60,34 @@ All the Mushroom cards can be configured using Dashboard UI editor.
 
 Different cards are available for differents entities :
 
--   🚨 [Alarm card](docs/cards/alarm-control-panel.md)
--   🪟 [Cover card](docs/cards/cover.md)
--   🪄 [Entity card](docs/cards/entity.md)
--   💨 [Fan card](docs/cards/fan.md)
--   💡 [Light card](docs/cards/light.md)
--   🙋 [Person card](docs/cards/person.md)
--   🛠 [Template card](docs/cards/template.md)
--   🔔 [Chips card](docs/cards/chips.md)
--   ✏️ [Title card](docs/cards/title.md)
--   📦 [Update card](docs/cards/update.md)
--   🧹 [Vacuum card](docs/cards/vacuum.md)
--   📺 [Media card](docs/cards/media-player.md)
--   🔒 [Lock card](docs/cards/lock.md)
--   💧 [Humidifier card](docs/cards/humidifier.md)
--   🌡 [Climate card](docs/cards/climate.md)
--   📑 [Select card](docs/cards/select.md)
--   🔢 [Number card](docs/cards/number.md)
+- 🚨 [Alarm card](docs/cards/alarm-control-panel.md)
+- 🔔 [Chips card](docs/cards/chips.md)
+- 🌡 [Climate card](docs/cards/climate.md)
+- 🪟 [Cover card](docs/cards/cover.md)
+- 🪄 [Entity card](docs/cards/entity.md)
+- 🕳 [Empty card](docs/cards/empty.md)
+- 💨 [Fan card](docs/cards/fan.md)
+- 💧 [Humidifier card](docs/cards/humidifier.md)
+- 💡 [Light card](docs/cards/light.md)
+- 🔒 [Lock card](docs/cards/lock.md)
+- 📺 [Media card](docs/cards/media-player.md)
+- 🔢 [Number card](docs/cards/number.md)
+- 🙋 [Person card](docs/cards/person.md)
+- 📑 [Select card](docs/cards/select.md)
+- 🛠 [Template card](docs/cards/template.md)
+- ✏️ [Title card](docs/cards/title.md)
+- 📦 [Update card](docs/cards/update.md)
+- 🧹 [Vacuum card](docs/cards/vacuum.md)
+
+### Legacy cards
+
+Some cards are considered as legacy, are not available in the card picker but you can still use them :
+
+- 🛠 [Legacy Template card](docs/cards/legacy-template.md)
+
+### Badges
+
+A [template badge](docs/badges/template.md) is available if you're using at least Home Assistant 2024.8.
 
 ### Theme customization
 
@@ -133,11 +144,12 @@ npm run build
 ### I don't see the last changes
 
 1. Check that your Home Assistant version is the latest. Some new Mushroom features can only be visible for the latest Home Assistant version.
-2. Check that you have the latest Mushroom version
-3. Clear your cache :
-    - delete mushroom resources (https://my.home-assistant.io/redirect/lovelace_resources/)
-    - uninstall Mushroom from HACS
-    - reinstall Mushroom from HACS
+2. Check that you have the latest Mushroom version on HACS
+3. Check that you have the latest Mushroom version by checking the browser console
+4. Clear your cache :
+   - delete mushroom resources (https://my.home-assistant.io/redirect/lovelace_resources/)
+   - uninstall Mushroom from HACS
+   - reinstall Mushroom from HACS
 
 ## Credits
 

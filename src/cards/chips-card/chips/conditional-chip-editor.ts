@@ -1,7 +1,7 @@
-import type { MDCTabBarActivatedEvent } from "@material/tab-bar";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import {
+  atLeastHaVersion,
   fireEvent,
   HASSDomEvent,
   HomeAssistant,
@@ -63,40 +63,61 @@ export class ConditionalChipEditor
     const customLocalize = setupCustomlocalize(this.hass);
 
     return html`
-      <mwc-tab-bar
-        .activeIndex=${this._cardTab ? 1 : 0}
-        @MDCTabBar:activated=${this._selectTab}
-      >
-        <mwc-tab
-          .label=${this.hass!.localize(
-            "ui.panel.lovelace.editor.card.conditional.conditions"
-          )}
-        ></mwc-tab>
-        <mwc-tab
-          .label=${customLocalize("editor.chip.conditional.chip")}
-        ></mwc-tab>
-      </mwc-tab-bar>
+      ${atLeastHaVersion(this.hass.connection.haVersion, 2025, 10)
+        ? html`
+            <ha-tab-group @wa-tab-show=${this._selectTab}>
+              <ha-tab-group-tab
+                slot="nav"
+                panel="conditions"
+                .active=${!this._cardTab}
+              >
+                ${this.hass!.localize(
+                  "ui.panel.lovelace.editor.card.conditional.conditions"
+                )}
+              </ha-tab-group-tab>
+              <ha-tab-group-tab
+                slot="nav"
+                panel="chip"
+                .active=${this._cardTab}
+              >
+                ${customLocalize("editor.chip.conditional.chip")}
+              </ha-tab-group-tab>
+            </ha-tab-group>
+          `
+        : html`
+            <sl-tab-group @sl-tab-show=${this._selectTab}>
+              <sl-tab slot="nav" panel="conditions" .active=${!this._cardTab}>
+                ${this.hass!.localize(
+                  "ui.panel.lovelace.editor.card.conditional.conditions"
+                )}
+              </sl-tab>
+              <sl-tab slot="nav" panel="chip" .active=${this._cardTab}>
+                ${customLocalize("editor.chip.conditional.chip")}
+              </sl-tab>
+            </sl-tab-group>
+          `}
       ${this._cardTab
         ? html`
             <div class="card">
               ${this._config.chip?.type !== undefined
                 ? html`
                     <div class="card-options">
-                      <mwc-button
+                      <ha-button
                         @click=${this._toggleMode}
                         .disabled=${!this._guiModeAvailable}
                         class="gui-mode-button"
+                        appearance="plain"
                       >
                         ${this.hass!.localize(
                           !this._cardEditorEl || this._GUImode
                             ? "ui.panel.lovelace.editor.edit_card.show_code_editor"
                             : "ui.panel.lovelace.editor.edit_card.show_visual_editor"
                         )}
-                      </mwc-button>
-                      <mwc-button @click=${this._handleReplaceChip}
+                      </ha-button>
+                      <ha-button @click=${this._handleReplaceChip}
                         >${this.hass!.localize(
                           "ui.panel.lovelace.editor.card.conditional.change_type"
-                        )}</mwc-button
+                        )}</ha-button
                       >
                     </div>
                     <mushroom-chip-element-editor
@@ -138,8 +159,8 @@ export class ConditionalChipEditor
     `;
   }
 
-  private _selectTab(ev: MDCTabBarActivatedEvent): void {
-    this._cardTab = ev.detail.index === 1;
+  private _selectTab(ev: CustomEvent): void {
+    this._cardTab = ev.detail.name === "chip";
   }
 
   private _toggleMode(): void {
@@ -223,8 +244,20 @@ export class ConditionalChipEditor
 
   static get styles(): CSSResultGroup {
     return css`
-      mwc-tab-bar {
-        border-bottom: 1px solid var(--divider-color);
+      sl-tab {
+        flex: 1;
+      }
+      sl-tab::part(base) {
+        width: 100%;
+        justify-content: center;
+      }
+
+      ha-tab-group-tab {
+        flex: 1;
+      }
+      ha-tab-group-tab::part(base) {
+        width: 100%;
+        justify-content: center;
       }
       .card {
         margin-top: 8px;
