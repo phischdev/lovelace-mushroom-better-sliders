@@ -1,11 +1,11 @@
 import {
-    css,
-    CSSResultGroup,
-    html,
-    LitElement,
-    nothing,
-    PropertyValues,
-    TemplateResult,
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+  TemplateResult,
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
@@ -14,9 +14,11 @@ import "hammerjs";
 
 export const DEFAULT_SLIDER_THRESHOLD = 10;
 const getSliderThreshold = (element: any): number | undefined => {
-    const thresholdValue = window.getComputedStyle(element).getPropertyValue("--slider-threshold");
-    const threshold = parseFloat(thresholdValue);
-    return isNaN(threshold) ? DEFAULT_SLIDER_THRESHOLD : threshold;
+  const thresholdValue = window
+    .getComputedStyle(element)
+    .getPropertyValue("--slider-threshold");
+  const threshold = parseFloat(thresholdValue);
+  return isNaN(threshold) ? DEFAULT_SLIDER_THRESHOLD : threshold;
 };
 
 function throttle(cb, delay = 0) {
@@ -35,29 +37,29 @@ function throttle(cb, delay = 0) {
 
 @customElement("mushroom-slider")
 export class SliderItem extends LitElement {
-    @property({ type: Boolean }) public disabled: boolean = false;
+  @property({ type: Boolean }) public disabled: boolean = false;
 
-    @property({ type: Boolean }) public inactive: boolean = false;
+  @property({ type: Boolean }) public inactive: boolean = false;
 
-    @property({ type: Boolean, attribute: "show-active" })
-    public showActive?: boolean;
+  @property({ type: Boolean, attribute: "show-active" })
+  public showActive?: boolean;
 
-    @property({ type: Boolean, attribute: "show-indicator" })
-    public showIndicator?: boolean;
+  @property({ type: Boolean, attribute: "show-indicator" })
+  public showIndicator?: boolean;
 
-    @property({ attribute: false, type: Number, reflect: true })
-    public value?: number;
+  @property({ attribute: false, type: Number, reflect: true })
+  public value?: number;
 
-    @property({ type: Number })
-    public step: number = 1;
+  @property({ type: Number })
+  public step: number = 1;
 
-    @property({ type: Number })
-    public min: number = 0;
+  @property({ type: Number })
+  public min: number = 0;
 
-    @property({ type: Number })
-    public max: number = 100;
+  @property({ type: Number })
+  public max: number = 100;
 
-    private _mc?: HammerManager;
+  private _mc?: HammerManager;
 
     @state() controlled: boolean = false;
     
@@ -66,18 +68,145 @@ export class SliderItem extends LitElement {
     @state() controlValue: number = 0; 
 
 
-    valueToPercentage(value: number) {
-        return (value - this.min) / (this.max - this.min);
-    }
+  valueToPercentage(value: number) {
+    return (value - this.min) / (this.max - this.min);
+  }
 
-    percentageToValue(value: number) {
-        return (this.max - this.min) * value + this.min;
-    }
+  percentageToValue(value: number) {
+    return (this.max - this.min) * value + this.min;
+  }
 
-    protected firstUpdated(changedProperties: PropertyValues): void {
-        super.firstUpdated(changedProperties);
-        this.setupListeners();
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
+    this.setupListeners();
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.setupListeners();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.destroyListeners();
+  }
+
+  @query("#slider")
+  private slider;
+
+  setupListeners() {
+    if (this.slider && !this._mc) {
+      const threshold = getSliderThreshold(this.slider);
+      this._mc = new Hammer.Manager(this.slider, { touchAction: "pan-y" });
+      this._mc.add(
+        new Hammer.Pan({
+          threshold,
+          direction: Hammer.DIRECTION_ALL,
+          enable: true,
+        })
+      );
+
+      this._mc.add(new Hammer.Tap({ event: "singletap" }));
+
+      let savedValue;
+      this._mc.on("panstart", () => {
+        if (this.disabled) return;
+        this.controlled = true;
+        savedValue = this.value;
+      });
+      this._mc.on("pancancel", () => {
+        if (this.disabled) return;
+        this.controlled = false;
+        this.value = savedValue;
+      });
+      this._mc.on("panmove", (e) => {
+        if (this.disabled) return;
+        const percentage = getPercentageFromEvent(e);
+        this.value = this.percentageToValue(percentage);
+        this.dispatchEvent(
+          new CustomEvent("current-change", {
+            detail: {
+              value: Math.round(this.value / this.step) * this.step,
+            },
+          })
+        );
+      });
+      this._mc.on("panend", (e) => {
+        if (this.disabled) return;
+        this.controlled = false;
+        const percentage = getPercentageFromEvent(e);
+        // Prevent from input releasing on a value that doesn't lie on a step
+        this.value =
+          Math.round(this.percentageToValue(percentage) / this.step) *
+          this.step;
+        this.dispatchEvent(
+          new CustomEvent("current-change", {
+            detail: {
+              value: undefined,
+            },
+          })
+        );
+        this.dispatchEvent(
+          new CustomEvent("change", {
+            detail: {
+              value: this.value,
+            },
+          })
+        );
+      });
+
+      this._mc.on("singletap", (e) => {
+        if (this.disabled) return;
+        const percentage = getPercentageFromEvent(e);
+        // Prevent from input selecting a value that doesn't lie on a step
+        this.value =
+          Math.round(this.percentageToValue(percentage) / this.step) *
+          this.step;
+        this.dispatchEvent(
+          new CustomEvent("change", {
+            detail: {
+              value: this.value,
+            },
+          })
+        );
+      });
     }
+  }
+
+  destroyListeners() {
+    if (this._mc) {
+      this._mc.destroy();
+      this._mc = undefined;
+    }
+  }
+
+  protected render(): TemplateResult {
+    return html`
+      <div
+        class=${classMap({
+          container: true,
+          inactive: this.inactive || this.disabled,
+          controlled: this.controlled,
+        })}
+      >
+        <div
+          id="slider"
+          class="slider"
+          style=${styleMap({
+            "--value": `${this.valueToPercentage(this.value ?? 0)}`,
+          })}
+        >
+          <div class="slider-track-background"></div>
+          ${this.showActive
+            ? html`<div class="slider-track-active"></div>`
+            : nothing}
+          ${this.showIndicator
+            ? html`<div class="slider-track-indicator"></div>`
+            : nothing}
+        </div>
+      </div>
+    `;
+  }
 
     connectedCallback(): void {
         super.connectedCallback();
@@ -92,7 +221,7 @@ export class SliderItem extends LitElement {
     @query("#slider")
     private slider;
 
-    private speedFactor = 0.4;
+    private speedFactor = 0.8;
     private previewThrottle = 130; // ms
 
     setupListeners() {

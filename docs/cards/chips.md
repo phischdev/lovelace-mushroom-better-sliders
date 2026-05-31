@@ -18,7 +18,7 @@ All the options are available in the lovelace editor but you can use `yaml` if y
 ![Chip action light](../images/chip-action-light.png)
 ![Chip action dark](../images/chip-action-dark.png)
 
-An action chip allows you to perform a Home Assistant action (navigate, call-service, etc...).
+An action chip allows you to perform a Home Assistant action (navigate, perform-action, etc...).
 
 ### Alarm control panel chip
 
@@ -59,6 +59,13 @@ An light chip allows you to display light.
 
 A menu chip allows you to open the drawer in mobile.
 
+### Quickbar chip
+
+![Chip quickbar light](../images/chip-quickbar-light.png)
+![Chip quickbar dark](../images/chip-quickbar-dark.png)
+
+The quickbar chip allows you to launch the quickbar in mobile. You may choose to open the entity, device, or command panel. Defaults to entity.
+
 ### Spacer chip
 
 ![Chip menu light](../images/chip-spacer-light.png)
@@ -84,17 +91,17 @@ A weather chip allows you to display the weather.
 
 \* You can render weather svg icons using [weather state](https://developers.home-assistant.io/docs/core/entity/weather/#recommended-values-for-state-and-condition) as icon :
 
--   weather-clear-night
--   weather-cloudy
--   weather-fog
--   weather-lightning
--   weather-lightning-rainy
--   weather-partlycloudy
--   weather-pouring
--   weather-rainy
--   weather-hail
--   weather-snowy
--   weather-snowy-rainy
--   weather-sunny
--   weather-windy
--   weather-windy-variant
+- weather-clear-night
+- weather-cloudy
+- weather-fog
+- weather-lightning
+- weather-lightning-rainy
+- weather-partlycloudy
+- weather-pouring
+- weather-rainy
+- weather-hail
+- weather-snowy
+- weather-snowy-rainy
+- weather-sunny
+- weather-windy
+- weather-windy-variant

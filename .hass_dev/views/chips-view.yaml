@@ -106,6 +106,18 @@ cards:
           - type: menu
             icon: mdi:home
   - type: vertical-stack
+    title: QuickBar chips
+    cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: quickbar
+          - type: quickbar
+            icon: mdi:tablet-cellphone
+            mode: device
+          - type: quickbar
+            icon: mdi:gesture-tap-button
+            mode: command
+  - type: vertical-stack
     title: Action chip
     cards:
       - type: custom:mushroom-chips-card
@@ -124,9 +136,9 @@ cards:
           - type: action
             icon: mdi:bell
             tap_action: 
-              action: call-service
-              service: notify.persistent_notification
-              service_data:
+              action: perform-action
+              perform_action: notify.persistent_notification
+              data:
                 message: This is notification from mushroom dashboard
           - type: action
             icon: mdi:github
@@ -158,8 +170,8 @@ cards:
                 grey
               {% endif %}
             tap_action:
-              action: call-service
-              service: light.toggle
+              action: perform-action
+              peform_action: light.toggle
               target:
                 entity_id: light.bed_light
           - type: template

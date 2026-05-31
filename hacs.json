@@ -1,6 +1,6 @@
 {
-    "name": "Mushroom - Better Sliders",
-    "filename": "mushroom.js",
-    "homeassistant": "2023.7.0",
-    "render_readme": true
+  "name": "Mushroom",
+  "filename": "mushroom.js",
+  "homeassistant": "2025.10.0",
+  "render_readme": true
 }

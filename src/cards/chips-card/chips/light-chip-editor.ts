@@ -1,76 +1,95 @@
 import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { fireEvent, HomeAssistant } from "../../../ha";
+import memoizeOne from "memoize-one";
+import { fireEvent, HomeAssistant, LocalizeFunc } from "../../../ha";
 import setupCustomlocalize from "../../../localize";
 import { computeActionsFormSchema } from "../../../shared/config/actions-config";
+import { computeInfoOptions } from "../../../shared/config/appearance-config";
 import { GENERIC_LABELS } from "../../../utils/form/generic-fields";
 import { HaFormSchema } from "../../../utils/form/ha-form";
+import { computeNameSchema } from "../../../utils/form/name-schema";
 import { computeChipEditorComponentName } from "../../../utils/lovelace/chip/chip-element";
 import { LightChipConfig } from "../../../utils/lovelace/chip/types";
 import { LovelaceChipEditor } from "../../../utils/lovelace/types";
 import { LIGHT_ENTITY_DOMAINS } from "../../light-card/const";
 import { LIGHT_LABELS } from "../../light-card/light-card-editor";
 
-const SCHEMA: HaFormSchema[] = [
-    { name: "entity", selector: { entity: { domain: LIGHT_ENTITY_DOMAINS } } },
+const computeSchema = memoizeOne(
+  (localize: LocalizeFunc, version: string): HaFormSchema[] => [
     {
-        type: "grid",
-        name: "",
-        schema: [
-            { name: "name", selector: { text: {} } },
-            { name: "content_info", selector: { mush_info: {} } },
-        ],
+      name: "entity",
+      selector: { entity: { domain: LIGHT_ENTITY_DOMAINS } },
+    },
+    computeNameSchema(version),
+    {
+      name: "content_info",
+      selector: {
+        select: {
+          options: computeInfoOptions(localize),
+          mode: "dropdown",
+        },
+      },
     },
     {
-        type: "grid",
-        name: "",
-        schema: [
-            { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-            { name: "use_light_color", selector: { boolean: {} } },
-        ],
+      type: "grid",
+      name: "",
+      schema: [
+        {
+          name: "icon",
+          selector: { icon: {} },
+          context: { icon_entity: "entity" },
+        },
+        { name: "use_light_color", selector: { boolean: {} } },
+      ],
     },
     ...computeActionsFormSchema(),
-];
+  ]
+);
 
 @customElement(computeChipEditorComponentName("light"))
 export class LightChipEditor extends LitElement implements LovelaceChipEditor {
-    @property({ attribute: false }) public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-    @state() private _config?: LightChipConfig;
+  @state() private _config?: LightChipConfig;
 
-    public setConfig(config: LightChipConfig): void {
-        this._config = config;
+  public setConfig(config: LightChipConfig): void {
+    this._config = config;
+  }
+
+  private _computeLabel = (schema: HaFormSchema) => {
+    const customLocalize = setupCustomlocalize(this.hass!);
+
+    if (GENERIC_LABELS.includes(schema.name)) {
+      return customLocalize(`editor.card.generic.${schema.name}`);
+    }
+    if (LIGHT_LABELS.includes(schema.name)) {
+      return customLocalize(`editor.card.light.${schema.name}`);
+    }
+    return this.hass!.localize(
+      `ui.panel.lovelace.editor.card.generic.${schema.name}`
+    );
+  };
+
+  protected render() {
+    if (!this.hass || !this._config) {
+      return nothing;
     }
 
-    private _computeLabel = (schema: HaFormSchema) => {
-        const customLocalize = setupCustomlocalize(this.hass!);
+    const customLocalize = setupCustomlocalize(this.hass);
+    const schema = computeSchema(customLocalize, this.hass.config.version);
 
-        if (GENERIC_LABELS.includes(schema.name)) {
-            return customLocalize(`editor.card.generic.${schema.name}`);
-        }
-        if (LIGHT_LABELS.includes(schema.name)) {
-            return customLocalize(`editor.card.light.${schema.name}`);
-        }
-        return this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema.name}`);
-    };
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${this._config}
+        .schema=${schema}
+        .computeLabel=${this._computeLabel}
+        @value-changed=${this._valueChanged}
+      ></ha-form>
+    `;
+  }
 
-    protected render() {
-        if (!this.hass || !this._config) {
-            return nothing;
-        }
-
-        return html`
-            <ha-form
-                .hass=${this.hass}
-                .data=${this._config}
-                .schema=${SCHEMA}
-                .computeLabel=${this._computeLabel}
-                @value-changed=${this._valueChanged}
-            ></ha-form>
-        `;
-    }
-
-    private _valueChanged(ev: CustomEvent): void {
-        fireEvent(this, "config-changed", { config: ev.detail.value });
-    }
+  private _valueChanged(ev: CustomEvent): void {
+    fireEvent(this, "config-changed", { config: ev.detail.value });
+  }
 }
